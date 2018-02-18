@@ -24,6 +24,7 @@ CREATE TABLE transactions (
 );
 
 CREATE TABLE holdings (
+	id INTEGER PRIMARY KEY,
 	currency_id INTEGER,
 	user_id INTEGER,
 	quantity FLOAT,
