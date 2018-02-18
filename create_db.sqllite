@@ -1,0 +1,33 @@
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE users (
+	id INTEGER PRIMARY KEY,
+	name VARCHAR(255),
+	pubkey BLOB
+);
+
+CREATE TABLE currencies (
+	id INTEGER PRIMARY KEY,
+	code VARCHAR(255) UNIQUE,
+	name VARCHAR(255)
+);
+
+CREATE TABLE transactions (
+	id INTEGER PRIMARY KEY,
+	type INTEGER,
+	user_id INTEGER,
+	currency_id INTEGER,
+	quantity FLOAT,
+	exchange_rate FLOAT,
+	FOREIGN KEY(user_id) REFERENCES users(id),
+	FOREIGN KEY(currency_id) REFERENCES currencies(id)
+);
+
+CREATE TABLE holdings (
+	currency_id INTEGER,
+	user_id INTEGER,
+	quantity FLOAT,
+	FOREIGN KEY(currency_id) REFERENCES currencies(id),
+	FOREIGN KEY(user_id) REFERENCES users(id)
+);
+

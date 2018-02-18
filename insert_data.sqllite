@@ -1,0 +1,31 @@
+INSERT INTO users (
+	name
+)
+VALUES
+('Jim'),
+('Bob'),
+('Lucy'),
+('Sally'),
+('MarketMaker');
+
+INSERT INTO currencies (
+	code,
+	name
+)
+VALUES
+('USD', ' US Dollars'),
+('BTC',  'Bitcoin'),
+('LTC',  'Litecoin'),
+('DOGE', 'Dogecoin'),
+('XMR',  'Monero');
+
+INSERT INTO holdings (
+	currency_id,
+	user_id,
+	quantity
+)
+VALUES
+(1,1,10000.00),
+(1,2,10000.00),
+(1,3,10000.00),
+(1,4,10000.00);
