@@ -18,9 +18,6 @@ our_trade = session.query(Transaction).first()
 session.commit()
 
 app = Flask(__name__)
-@app.route("/")
-def main():
-    return "Welcome!"
 
 @app.route('/js/<path:path>')
 def send_js(path):
@@ -56,7 +53,6 @@ def holdings(user_id):
 def trade():
     rjson = {'quantity' : 0, 'currency_id' : -1, 'price' : -1, 'trade_currency' : -1}
     bitcoin_price = 120000
-    print(request.method)
     if request.method == 'POST':
     	user_id = int(request.form['user_id'])
         currency_id = int(request.form['currency_id'])
@@ -79,7 +75,6 @@ def trade():
  
     	trade_currency_holdings = session.query(Holding).filter_by(currency_id=trade_currency,user_id=user_id).first()
 	if  asset_price * quantity <= trade_currency_holdings:
-	    print('In trading block')
 	    rjson['quantity'] = quantity
 	    rjson['trade_type'] = trade_type
 	    rjson['trade_currency'] = trade_currency
@@ -92,11 +87,14 @@ def trade():
 
     return resp
 
-@app.route('/trade')
+@app.route('/holdings')
 def showHoldings():
+    return render_template('holdings.html')
+
+@app.route('/trade')
+def showTrade():
     return render_template('trade.html')
 
 if __name__ == "__main__":
     user = session.query(User).filter_by(id=2).first()
-    print("User : " + str(user))
     app.run(host='0.0.0.0',port=8888)
