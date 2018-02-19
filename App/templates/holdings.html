@@ -7,17 +7,30 @@
 
 $( document ).ready(function() {
 
+var sum = 0;
+
     $.ajax({
         type: "GET",
         dataType: "json",
         url: "holdings/2", 
         success: function(response) {
 	       $.each(response,function(i, holding) {
-                    $("#holdings_table").append('<tr><td>' + holding.code + '</td><td>' + holding.quantity + '</td><td>' + holding.value + '</td></tr>');
-                });	
-	}
-    });
+                    $("#holdings_table").append('<tr><td class="code">' + holding.code + '</td><td class="quantity">' + holding.quantity + '</td><td class="value">' + holding.value + '</td></tr>');
+                })},	
+	complete: function(xhr, status) {
+$(".price").each(function() {
+
+    var value = $(this).text();
+    // add only if the value is number
+    if(!isNaN(value) && value.length != 0) {
+        sum += parseFloat(value);
+    }
 });
+}
+        });
+        //set the value of currents rows sum to the total-combat element in the current row
+                    $("#holdings_table > tbody").after('<tr><td class="code">TOTAL</td><td class="quantity">-</td><td class="value">' + sum + '</td></tr>');
+    });
   </script>
   </head>
  

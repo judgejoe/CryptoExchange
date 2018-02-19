@@ -9,14 +9,6 @@ engine = sa.create_engine('sqlite:///' + sqlite_file)
 Session = sessionmaker(bind=engine)
 session = Session()
 
-our_user = session.query(User).filter_by(id=1).first()
-
-trade = Transaction(transaction_type=0, user_id=2,currency_id=2,quantity=1)
-
-session.add(trade)
-our_trade = session.query(Transaction).first() 
-session.commit()
-
 prices = {
 	"BTC"  : {"USD" : 10557.2},
 	"LTC"  : {"BTC":0.02056,"USD":217.29},
@@ -58,7 +50,7 @@ def holdings(user_id):
 	rjson.append({'currency_id': row.currency.id, 'code' : row.currency.code, 'quantity' : row.quantity, 'value': value})	
 	total += value 
 
-    rjson.append({'currency_id': 'TOTAL', 'code' : 'TOTAL', 'quantity' : '-', 'value': total})	
+    #rjson.append({'currency_id': 'TOTAL', 'code' : 'TOTAL', 'quantity' : '-', 'value': total})	
     js = json.dumps(rjson)
 
     resp = Response(js, status=200, mimetype='application/json')
