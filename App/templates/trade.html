@@ -13,7 +13,7 @@ $( document ).ready(function() {
         url: "holdings/2", 
         success: function(response) {
 	       $.each(response,function(i, holding) {
-                    $("#my_currencies").append('<option value=' + holding.id + '>' + holding.code + '</option>');
+                    $("#my_currencies").append('<option value=' + holding.currency_id + '>' + holding.code + '</option>');
                 });	
 	}
     });
@@ -24,18 +24,30 @@ $( document ).ready(function() {
 //        data: {number: numberval},
         success: function(response) {
 	       $.each(response,function(i, currency) {
-                    $("#trade_currency").append('<option value=' + currency.id + '>' + currency.code + '</option>');
+                    $("#trade_currency").append('<option value=' + currency.currency_id + '>' + currency.code + '</option>');
                 });	
 	}
     });
 });
+
+function submitTrade (){
+    $.ajax({
+        url:'trades',
+        type:'post',
+        data:$('#trade').serialize(),
+        success:function(){
+            alert("worked");
+        }
+    });
+}
   </script>
   </head>
  
   <body>
-	<form action="trades" method="POST"> 
-	I want to trade my <select name="my_currency" id="my_currencies"> </select> for <input name="quantity" id="quantity"></input>   <select name="trade_currency" id="trade_currency"</select>
+	<form id="trade" name="trade" action="javascript: submitTrade()" method="POST"> 
+	I want to trade my <select name="my_currency_id" id="my_currencies"> </select> for <input name="quantity" id="quantity"></input>   <select name="trade_currency_id" id="trade_currency"</select>
 	</select> 
+    <input type="hidden" name="success_url" value="/holdings">
 	<input type="submit">
 	</form> 
     </div>
