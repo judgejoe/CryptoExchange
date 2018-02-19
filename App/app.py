@@ -84,12 +84,22 @@ def trade():
             return Response(json.dumps({'error' : 'Cannot trade ' + str(my_currency_code) + ' for ' + str(trade_currency_code)}), status=403, mimetype='application/json')
 
     my_currency_holdings = session.query(Holding).filter_by(currency_id=my_currency_id,user_id=user_id).first().quantity
-    if  prices[trade_currency_code][my_currency_code] * quantity <= my_currency_holdings:
+    price = prices[trade_currency_code][my_currency_code] * quantity
+    if price <= my_currency_holdings:
         rjson['my_currency_holdings'] = my_currency_holdings
         rjson['quantity'] = quantity
         rjson['trade_currency_id'] = trade_currency_id
         rjson['my_currency_id'] = my_currency_id
         rjson['price'] = prices[trade_currency_code][my_currency_code] * quantity
+        my_currency_object = session.query(Holding).filter_by(currency_id=my_currency_id,user_id=user_id).first()
+        trade_currency_object = session.query(Holding).filter_by(currency_id=trade_currency_id,user_id=user_id).first()
+        my_currency_object.quantity -= price
+        if trade_currency_object is None:
+            new_holding = Holding(currency_id = trade_currency_id, user_id = user_id, quantity = quantity)
+            session.add(new_holding)
+        else:
+            trade_currency_object.quantity += quantity
+        session.commit()
         return Response(json.dumps(rjson), status=200 , mimetype='application/json')
     else:
         return Response(json.dumps({'error' : 'Insufficient funds'}), status=403, mimetype='application/json')
