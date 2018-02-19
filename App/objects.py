@@ -63,15 +63,4 @@ class Transaction(Base):
 				self.id, self.user, self.transaction_type, self.currency_id, self.quantity)
 
 
-#Session = sessionmaker(bind=engine)
-#session = Session()
 
-#our_user = session.query(User).filter_by(id=1).first()
-#print(our_user.holdings)
-
-#trade = Transaction(transaction_type=0, user_id=2,currency_id=2,quantity=1)
-
-#session.add(trade)
-#our_trade = session.query(Transaction).first() 
-#print(our_trade)
-#session.commit()

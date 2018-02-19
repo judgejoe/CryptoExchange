@@ -17,7 +17,20 @@ session.add(trade)
 our_trade = session.query(Transaction).first() 
 session.commit()
 
+prices = {
+	"BTC"  : {"USD" : 10557.2},
+	"LTC"  : {"BTC":0.02056,"USD":217.29},
+	"DOGE" : {"BTC":6.1e-7,"USD":0.006542},
+	"XMR"  : {"BTC":0.02863,"USD":303.03},
+	"USD"  : {"BTC":0.0000947,"USD" : 1}
+	}
+
 app = Flask(__name__)
+
+@app.before_request
+def before_request():
+    #update all crypto prices
+    pass
 
 @app.route('/js/<path:path>')
 def send_js(path):
@@ -39,10 +52,13 @@ def currencies():
 @app.route('/holdings/<int:user_id>', methods=['GET'])
 def holdings(user_id):
     rjson = []
-
+    total = 0
     for row in session.query(User).filter_by(id=user_id).one().holdings:
-	rjson.append({'currency_id': row.currency.id, 'code' : row.currency.code, 'quantity' : row.quantity})	
+	value = prices[row.currency.code]["USD"] * row.quantity
+	rjson.append({'currency_id': row.currency.id, 'code' : row.currency.code, 'quantity' : row.quantity, 'value': value})	
+	total += value 
 
+    rjson.append({'currency_id': 'TOTAL', 'code' : 'TOTAL', 'quantity' : '-', 'value': total})	
     js = json.dumps(rjson)
 
     resp = Response(js, status=200, mimetype='application/json')
@@ -51,35 +67,40 @@ def holdings(user_id):
 
 @app.route('/trades', methods=['POST'])
 def trade():
-    rjson = {'quantity' : 0, 'currency_id' : -1, 'price' : -1, 'trade_currency' : -1}
-    bitcoin_price = 120000
+    rjson = {'quantity' : 0, 'my_currency_id' : -1, 'trade_currency_id' : -1}
     if request.method == 'POST':
     	user_id = int(request.form['user_id'])
-        currency_id = int(request.form['currency_id'])
+        my_currency_id = int(request.form['my_currency_id'])
+        trade_currency_id = int(request.form['trade_currency_id'])
 	quantity = float(request.form['quantity'])
-	trade_type = int(request.form['trade_type'])
 	user = session.query(User).filter_by(id=user_id).first()
-
-	if currency_id == 1:
-	    trade_currency = 2
-    	    asset_price = .001
-	elif currency_id == 2:
-	    trade_currency = 1
-    	    asset_price = 12000
-	elif currency_id == 3:
-            trade_currency = 2
-    	    asset_price = .2
-	elif currency_id == 4:
-	    trade_currency = 2
-    	    asset_price = .5
- 
-    	trade_currency_holdings = session.query(Holding).filter_by(currency_id=trade_currency,user_id=user_id).first()
-	if  asset_price * quantity <= trade_currency_holdings:
+	my_currency_code = session.query(Currency).filter_by(id=my_currency_id).first().code
+	trade_currency_code = session.query(Currency).filter_by(id=trade_currency_id).first().code 
+	
+	if trade_currency_code == "BTC":
+	    if my_currency_code != "USD":
+	        status=403
+                rjson['error']="Cannot trade " + str(my_currency_code) + " for " + str(trade_currency_code)
+		js = json.dumps(rjson)
+		return Response(js, status=status,mimetype='application/json')
+	if trade_currency_code == "USD" or trade_currency_code == "LTC" or trade_currency_code == "DOGE" or trade_currency_code == "XMR":
+	    if my_currency_code != "BTC":
+	        status = 403
+                rjson['error']="Cannot trade " + str(my_currency_code) + " for " + str(trade_currency_code)
+		js = json.dumps(rjson)
+		return Response(js, status=status,mimetype='application/json')
+	
+    	my_currency_holdings = session.query(Holding).filter_by(currency_id=my_currency_id,user_id=user_id).first().quantity
+	if  prices[trade_currency_code][my_currency_code] * quantity <= my_currency_holdings:
+	    rjson['my_currency_holdings'] = my_currency_holdings
 	    rjson['quantity'] = quantity
-	    rjson['trade_type'] = trade_type
-	    rjson['trade_currency'] = trade_currency
-	    rjson['asset_price'] = asset_price
+	    rjson['trade_currency_id'] = trade_currency_id
+	    rjson['my_currency_id'] = my_currency_id
+	    rjson['price'] = prices[trade_currency_code][my_currency_code] * quantity
 	    status = 200
+	else:
+	    status = 405
+            rjson['error']="Unsufficient funds for trade"
 
     js = json.dumps(rjson)
 

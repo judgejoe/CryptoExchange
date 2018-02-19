@@ -13,7 +13,7 @@ $( document ).ready(function() {
         url: "holdings/2", 
         success: function(response) {
 	       $.each(response,function(i, holding) {
-                    $("#holdings_table").append('<tr><td>' + holding.code + '</td><td>' + holding.quantity + '</td></tr>');
+                    $("#holdings_table").append('<tr><td>' + holding.code + '</td><td>' + holding.quantity + '</td><td>' + holding.value + '</td></tr>');
                 });	
 	}
     });
@@ -26,6 +26,7 @@ $( document ).ready(function() {
  		<tr>
   		 <th>Currency</th>
    		 <th>Quantity</th>
+   		 <th>Value (USD)</th>
  		</tr>
 	<table>
   </body>
