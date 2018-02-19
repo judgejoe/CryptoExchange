@@ -3,6 +3,7 @@ import sqlalchemy as sa
 from flask import json, request
 from sqlalchemy.orm import sessionmaker
 from objects import User, Transaction, Currency, Holding
+import requests
 
 sqlite_file = '../db/cryptoexchange.db'
 engine = sa.create_engine('sqlite:///' + sqlite_file)
@@ -99,11 +100,18 @@ def trade():
             session.add(new_holding)
         else:
             trade_currency_object.quantity += quantity
+        new_transaction = Transaction(transaction_type=0,user_id = user_id, currency_id = my_currency_id, exchange_rate = 1, quantity=quantity)
+        session.add(new_transaction)
+
         session.commit()
         return Response(json.dumps(rjson), status=200 , mimetype='application/json')
     else:
         return Response(json.dumps({'error' : 'Insufficient funds'}), status=403, mimetype='application/json')
 
+
+@app.route('/prices')
+def showPrices():
+    return render_template('currencies.html')
 
 @app.route('/holdings')
 def showHoldings():
@@ -112,6 +120,25 @@ def showHoldings():
 @app.route('/trade')
 def showTrade():
     return render_template('trade.html')
+ 
+@app.route('/data/pricemulti', methods=['GET'])
+def _proxy(*args, **kwargs):
+    print('here')
+    resp = requests.request(
+            method=request.method,
+            url=request.url.replace('http://','https://').replace(request.headers['Host'], 'min-api.cryptocompare.com'),
+            headers={key: value for (key, value) in request.headers if key != 'Host'},
+            data=request.get_data(),
+            cookies=request.cookies,
+            allow_redirects=False)
+
+    excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
+    headers = [(name, value) for (name, value) in resp.raw.headers.items()
+            if name.lower() not in excluded_headers]
+
+    response = Response(resp.content, resp.status_code, headers)
+    return response
+
 
 if __name__ == "__main__":
     user = session.query(User).filter_by(id=2).first()
