@@ -13,7 +13,7 @@ $( document ).ready(function() {
         url: "holdings/", 
         success: function(response) {
 	       $.each(response,function(i, holding) {
-                    $("#my_currencies").append('<option value=' + holding.currency_id + '>' + holding.currency_code + '</option>');
+                    $("#from_currency_id").append('<option value=' + holding.currency_id + '>' + holding.currency_code.toString() + '</option>');
                 });	
 	}
     });
@@ -23,10 +23,22 @@ $( document ).ready(function() {
         url: "currencies/", 
         success: function(response) {
 	       $.each(response,function(i, currency) {
-                    $("#trade_currency").append('<option value=' + currency.id + '>' + currency.code + '</option>');
+                    $("#to_currency_id").append('<option value=' + currency.id + '>' + currency.code + '</option>');
                 });	
 	}
     });
+$( '#from_quantity,#from_currency_id,#to_currency_id' ).change(function() {
+    $.ajax({
+        type: "POST",
+        dataType: "json",
+        url: "convert_currency/", 
+        data: $('#trade').serialize(),
+        success: function(response) {
+
+                    $("#to_quantity").val(response.quantity_to.toString() );
+                }	
+	});
+})
 });
 
 function submitTrade (){
@@ -35,7 +47,7 @@ function submitTrade (){
         type:'post',
         data:$('#trade').serialize(),
         success:function(){
-            alert("worked");
+            window.location="/myholdings"
         }
     });
 }
@@ -44,7 +56,7 @@ function submitTrade (){
  
   <body>
 	<form id="trade" name="trade" action="javascript: submitTrade()" method="POST"> 
-	I want to trade my <select name="from_currency_id" id="my_currencies"> </select> for <input name="quantity" id="quantity"></input>   <select name="to_currency_id" id="trade_currency"</select>
+        I want to trade <input name="from_quantity" id="from_quantity"></input> <select name="from_currency_id" id="from_currency_id"> </select> for <input name="to_quantity" id="to_quantity" readonly></input><select name="to_currency_id" id="to_currency_id"></select>
 	</select> 
     <input type="hidden" name="success_url" value="/holdings">
 	<input type="submit">

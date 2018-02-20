@@ -11,13 +11,13 @@ class User(Base):
 
 	id = Column(Integer, primary_key=True)
 	name = Column(String)
-	pubkey = Column(String)
-	holdings = relationship("Holding")#, back_populates="user")
-	transactions = relationship("Transaction")#, back_populates="user")
+	password = Column(String)
+	holdings = relationship("Holding")
+	transactions = relationship("Transaction")
 
 	def __repr__(self):
-		return "<User(id=%d, name='%s', pubkey='%s')>" % (
-				self.id, self.name, self.pubkey)
+		return "<User(id=%d, name='%s', password='%s')>" % (
+				self.id, self.name, "".join(['*' for i in range(len(self.password))]))
 
 class Currency(Base):
 	__tablename__ = 'currencies'
@@ -25,7 +25,6 @@ class Currency(Base):
 	id = Column(Integer, primary_key=True)
 	name = Column(String)
 	code = Column(String)
-	#holding = relationship("Holding", back_populates="currency")
 
 	def __repr__(self):
 		return "<Currency(id=%d, name='%s', code='%s')>" % (

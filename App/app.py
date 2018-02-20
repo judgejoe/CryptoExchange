@@ -3,7 +3,7 @@ import sqlalchemy as sa
 from flask import json, request
 from sqlalchemy.orm import sessionmaker
 from objects import User, Transaction, Currency, Holding
-from currency import convert_currency
+from currency import convert_currency_code, tradeable_currency_codes
 from sqlalchemy.sql import functions as func
 import requests
 
@@ -47,7 +47,7 @@ def currencies():
     rjson = []
 
     for row in session.query(Currency).all():
-        rjson.append({'id': row.id, 'code' : row.code, 'value_usd' : convert_currency(row.code, 'USD', 1), 'value_btc': convert_currency(row.code, 'BTC', 1)})	
+        rjson.append({'id': row.id, 'code' : row.code, 'value_usd' : convert_currency_code(row.code, 'USD', 1), 'value_btc': convert_currency_code(row.code, 'BTC', 1)})	
 
     js = json.dumps(rjson)
 
@@ -80,62 +80,47 @@ def holdings():
     balances = get_balances(user_id)
     for row in balances:
         print(row)
-        rjson.append({'currency_id' : row.Transaction.currency.id, 'currency_code' : row.Transaction.currency.code, 'quantity' : row.balance, 'value': convert_currency(row.Transaction.currency.code, 'USD', row.balance)})	
+        rjson.append({'currency_id' : row.Transaction.currency.id, 'currency_code' : row.Transaction.currency.code, 'quantity' : row.balance, 'value': convert_currency_code(row.Transaction.currency.code, 'USD', row.balance)})	
     
     resp = Response(json.dumps(rjson), status=200, mimetype='application/json')
 
     return resp
 
-def tradeable_curencies(from_code, to_code):
-    if to_code == 'BTC':
-        if from_code != 'USD':
-            return False
-    if to_code == 'USD'  or \
-       to_code == 'LTC'  or \
-       to_code == 'DOGE' or \
-       to_code == 'XMR':
-        if from_code != 'BTC':
-            return False
-    return True
 
 @app.route('/trades/', methods=['POST'])
 def trade():
 
     rjson = {'quantity' : 0, 'from_currency_id' : -1, 'to_currency_id' : -1}
 
-    user_id            = request.cookies['login_user_id']
-    from_currency_id   = int(request.form['from_currency_id'])
-    to_currency_id     = int(request.form['to_currency_id'])
-    quantity           = float(request.form['quantity'])
-    user               = session.query(User).filter_by(id=user_id).first()
-    from_currency_code = session.query(Currency).filter_by(id=from_currency_id).first().code
-    to_currency_code   = session.query(Currency).filter_by(id=to_currency_id).first().code 
+    user_id             = request.cookies['login_user_id']
+    from_currency_id    = int(request.form['from_currency_id'])
+    to_currency_id      = int(request.form['to_currency_id'])
+    from_quantity       = float(request.form['from_quantity'])
+    user                = session.query(User).filter_by(id=user_id).first()
+    from_currency_code  = session.query(Currency).filter_by(id=from_currency_id).first().code
+    to_currency_code    = session.query(Currency).filter_by(id=to_currency_id).first().code 
     transaction_type_id = 3 
 
     # Check that these currencies are tradeable. Users are allowed to trade USD <-> BTC and BTC <-> (LTC|DOGE|XMR)
-    if not tradeable_curencies(from_currency_code,to_currency_code):
+    if not tradeable_currency_codes(from_currency_code,to_currency_code):
         return Response(json.dumps({'error' : 'Cannot trade ' + str(from_currency_code) + ' for ' + str(to_currency_code)}), 
                         status=403, 
                         mimetype='application/json')
 
 
     balance = get_currency_balance(user_id, from_currency_code)
-
-    trade_cost = convert_currency(to_currency_code, from_currency_code, quantity)
-
-    if trade_cost <= balance.balance:
-        rjson['quantity']           = quantity
-        rjson['to_currency_id']  = to_currency_id
-        rjson['from_currency_id']     = from_currency_id
-        rjson['price']              = trade_cost
+    if from_quantity <= balance.balance:
+        to_quantity = convert_currency_code(from_currency_code, to_currency_code, from_quantity)
+        rjson['to_currency_id']     = to_currency_id
+        rjson['from_currency_id']   = from_currency_id
         new_debit                   = Transaction(transaction_type_id = 3,
                                                   user_id             = user_id, 
                                                   currency_id         = from_currency_id, 
-                                                  amount              = -1 * trade_cost)
+                                                  amount              = -1 * from_quantity)
         new_credit                  = Transaction(transaction_type_id = 3,
                                                   user_id             = user_id, 
                                                   currency_id         = to_currency_id, 
-                                                  amount              = quantity)
+                                                  amount              = to_quantity)
         session.add(new_debit)
         session.add(new_credit)
 
@@ -157,12 +142,25 @@ def showHoldings():
 def showTrade():
     return render_template('trade.html')
  
+@app.route('/convert_currency/', methods=['POST'])
+def convertCurrency():
+    from_currency_id = request.form['from_currency_id']
+    to_currency_id   = request.form['to_currency_id']
+    quantity         = request.form['from_quantity']
+
+    from_currency_code = str(session.query(Currency).filter_by(id=from_currency_id).one().code)
+    to_currency_code = str(session.query(Currency).filter_by(id=to_currency_id).one().code)
+    conversion = convert_currency_code(from_currency_code, to_currency_code, quantity)
+
+    return Response(json.dumps({'from_currency_id' : from_currency_id, 'to_currency_id' : to_currency_id, 'quantity_from' : quantity, 'quantity_to' : conversion} ), status=200 , mimetype='application/json')
+
+
 @app.route('/data/pricemulti', methods=['GET'])
 def _proxy(*args, **kwargs):
-    print('here')
     resp = requests.request(
             method=request.method,
-            url=request.url.replace('http://','https://').replace(request.headers['Host'], 'min-api.cryptocompare.com'),
+            url=request.url.replace('http://','https://')
+                           .replace(request.headers['Host'], 'min-api.cryptocompare.com'),
             headers={key: value for (key, value) in request.headers if key != 'Host'},
             data=request.get_data(),
             cookies=request.cookies,
