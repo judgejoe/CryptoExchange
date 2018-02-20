@@ -4,7 +4,7 @@ import json
 
 # Globals == BAD. These aren't thread safe, and generally lead to bad code, but due to time constraints...
 last_update_time = 0
-
+update_prices = True
 prices = { }
 
 def convert_currency(from_code, to_code, quantity):
@@ -12,7 +12,7 @@ def convert_currency(from_code, to_code, quantity):
     global last_update_time
     global prices
     now = time.time()
-    if now - last_update_time > 60:
+    if now - last_update_time > 60 and update_prices:
         resp = requests.request(
                 method='GET',
                 url='https://min-api.cryptocompare.com/data/pricemulti',

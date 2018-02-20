@@ -11,14 +11,16 @@ $( document ).ready(function() {
 $.ajax({
     type: "GET",
     dataType: "json",
-    url: "holdings/2", 
+    url: "holdings", 
     success: function(response) {
-        var sum = 0;
+        var sum_value = 0;
+        var sum_quantity = 0;
         $.each(response,function(i, holding) {
-            $("#holdings_table").append('<tr><td class="code">' + holding.currency_code + '</td><td class="amount">' + holding.amount + '</td><td class="value"> $' + holding.value.toFixed(2) + '</td></tr>');
-            sum += holding.value;
+            $("#holdings_table").append('<tr><td class="code">' + holding.currency_code + '</td><td class="amount">' + holding.quantity + '</td><td class="value"> $' + holding.value.toFixed(2) + '</td></tr>');
+            sum_value    += holding.value;
+            sum_quantity += holding.quantity;
         })
-        $("#holdings_table > tbody").after('<tr><td class="code">TOTAL</td><td class="amount">-</td><td class="value"> $' + sum.toFixed(2) + '</td></tr>');
+        $("#holdings_table > tbody").after('<tr><td class="code">TOTAL</td><td class="amount">' + sum_quantity + '</td><td class="value"> $' + sum_value.toFixed(2) + '</td></tr>');
     }	
 });
 });

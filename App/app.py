@@ -1,4 +1,4 @@
-from flask import Flask, render_template, Response, send_from_directory
+from flask import Flask, render_template, Response, send_from_directory,redirect, url_for, make_response
 import sqlalchemy as sa
 from flask import json, request
 from sqlalchemy.orm import sessionmaker
@@ -14,14 +14,33 @@ session = Session()
 
 app = Flask(__name__)
 
+
 @app.before_request
 def before_request():
-    #update all crypto prices
-    pass
+    if 'login_user_id' not in request.cookies.keys() and request.endpoint != 'login':
+        return redirect(url_for('login'))
 
 @app.route('/js/<path:path>')
 def send_js(path):
     return send_from_directory('js', path)
+
+@app.route('/login', methods=['GET','POST'])
+def login():
+    if request.method == 'GET':
+        return render_template('login.html')
+    else:
+        username = request.form['username']
+        password = request.form['password']
+        user = session.query(User).filter_by(name=username).filter_by(password=password).scalar()
+        if user is None:
+            response = make_response(json.dumps({error:'Invalid username or password'}))
+            response.status_code=403
+            response.mime_type='application/json'
+            return response
+        else:
+            response = make_response(redirect(url_for('showHoldings')))
+            response.set_cookie('login_user_id',str(user.id),max_age=86400)
+            return response
 
 @app.route('/currencies/', methods=['GET'])
 def currencies():
@@ -48,10 +67,11 @@ def get_balances(user_id):
         return []
     return transactions
 
-@app.route('/holdings/<int:user_id>', methods=['GET'])
-def holdings(user_id):
+@app.route('/holdings/', methods=['GET'])
+def holdings():
     rjson = []
 
+    user_id = request.cookies['login_user_id']
     user = session.query(User).filter_by(id=user_id).scalar()
     if user == None:
         js = json.dumps(rjson)
@@ -60,43 +80,62 @@ def holdings(user_id):
     balances = get_balances(user_id)
     for row in balances:
         print(row)
-        rjson.append({'currency_id' : row.Transaction.currency.id, 'currency_code' : row.Transaction.currency.code, 'amount' : row.balance, 'value': convert_currency(row.Transaction.currency.code, 'USD', row.balance)})	
+        rjson.append({'currency_id' : row.Transaction.currency.id, 'currency_code' : row.Transaction.currency.code, 'quantity' : row.balance, 'value': convert_currency(row.Transaction.currency.code, 'USD', row.balance)})	
     
     resp = Response(json.dumps(rjson), status=200, mimetype='application/json')
 
     return resp
 
+def tradeable_curencies(from_code, to_code):
+    if to_code == 'BTC':
+        if from_code != 'USD':
+            return False
+    if to_code == 'USD'  or \
+       to_code == 'LTC'  or \
+       to_code == 'DOGE' or \
+       to_code == 'XMR':
+        if from_code != 'BTC':
+            return False
+    return True
+
 @app.route('/trades/', methods=['POST'])
 def trade():
 
-    rjson = {'quantity' : 0, 'my_currency_id' : -1, 'trade_currency_id' : -1}
+    rjson = {'quantity' : 0, 'from_currency_id' : -1, 'to_currency_id' : -1}
 
-    user_id = 2 #user_id, int(request.form['user_id'])
-    my_currency_id = int(request.form['my_currency_id'])
-    trade_currency_id = int(request.form['trade_currency_id'])
-    quantity = float(request.form['quantity'])
-    user = session.query(User).filter_by(id=user_id).first()
-    my_currency_code = session.query(Currency).filter_by(id=my_currency_id).first().code
-    trade_currency_code = session.query(Currency).filter_by(id=trade_currency_id).first().code 
-    
-    # TODO store valid currency trades in the DB instead of hardcoding them
-    if trade_currency_code == 'BTC':
-        if my_currency_code != 'USD':
-            return Response(json.dumps({'error' : 'Cannot trade ' + str(my_currency_code) + ' for ' + str(trade_currency_code)}), status=403, mimetype='application/json')
-    if trade_currency_code == 'USD' or trade_currency_code == 'LTC' or trade_currency_code == 'DOGE' or trade_currency_code == 'XMR':
-        if my_currency_code != 'BTC':
-            return Response(json.dumps({'error' : 'Cannot trade ' + str(my_currency_code) + ' for ' + str(trade_currency_code)}), status=403, mimetype='application/json')
+    user_id            = request.cookies['login_user_id']
+    from_currency_id   = int(request.form['from_currency_id'])
+    to_currency_id     = int(request.form['to_currency_id'])
+    quantity           = float(request.form['quantity'])
+    user               = session.query(User).filter_by(id=user_id).first()
+    from_currency_code = session.query(Currency).filter_by(id=from_currency_id).first().code
+    to_currency_code   = session.query(Currency).filter_by(id=to_currency_id).first().code 
+    transaction_type_id = 3 
 
-    trade_price = convert_currency(trade_currency_code,my_currency_code,quantity)
-    balance = get_currency_balance(user_id, my_currency_code)
+    # Check that these currencies are tradeable. Users are allowed to trade USD <-> BTC and BTC <-> (LTC|DOGE|XMR)
+    if not tradeable_curencies(from_currency_code,to_currency_code):
+        return Response(json.dumps({'error' : 'Cannot trade ' + str(from_currency_code) + ' for ' + str(to_currency_code)}), 
+                        status=403, 
+                        mimetype='application/json')
 
-    if trade_price <= balance.balance:
-        rjson['quantity'] = quantity
-        rjson['trade_currency_id'] = trade_currency_id
-        rjson['my_currency_id'] = my_currency_id
-        rjson['price'] = trade_price
-        new_debit = Transaction(transaction_type_id=3,user_id = user_id, currency_id = my_currency_id, amount=-1*trade_price)
-        new_credit = Transaction(transaction_type_id=3,user_id = user_id, currency_id = trade_currency_id, amount=quantity)
+
+    balance = get_currency_balance(user_id, from_currency_code)
+
+    trade_cost = convert_currency(to_currency_code, from_currency_code, quantity)
+
+    if trade_cost <= balance.balance:
+        rjson['quantity']           = quantity
+        rjson['to_currency_id']  = to_currency_id
+        rjson['from_currency_id']     = from_currency_id
+        rjson['price']              = trade_cost
+        new_debit                   = Transaction(transaction_type_id = 3,
+                                                  user_id             = user_id, 
+                                                  currency_id         = from_currency_id, 
+                                                  amount              = -1 * trade_cost)
+        new_credit                  = Transaction(transaction_type_id = 3,
+                                                  user_id             = user_id, 
+                                                  currency_id         = to_currency_id, 
+                                                  amount              = quantity)
         session.add(new_debit)
         session.add(new_credit)
 
@@ -110,7 +149,7 @@ def trade():
 def showPrices():
     return render_template('currencies.html')
 
-@app.route('/holdings')
+@app.route('/myholdings')
 def showHoldings():
     return render_template('holdings.html')
 
