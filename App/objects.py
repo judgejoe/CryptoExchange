@@ -46,21 +46,30 @@ class Holding(Base):
 				self.user_id, self.currency_id, self.quantity)
 
 
-class Transaction(Base):
-	__tablename__ = 'transactions'
+class TransactionType(Base):
+	__tablename__ = 'transaction_types'
 
 	id = Column(Integer, primary_key=True)
-	transaction_type = Column(Integer)
-	quantity = Column(Float)	
-	exchange_rate = Column(Float)
-	user_id = Column(Integer, ForeignKey('users.id'))
-	currency_id = Column(Integer, ForeignKey('currencies.id'))
-	quantity = Column(Float)
-	user = relationship("User", back_populates="transactions")
+	name = Column(Integer)
 
 	def __repr__(self):
-		return "<Transaction(id=%d, user=%s, transaction_type=%d, currency_id=%d, quantity='%d')>" % (
-				self.id, self.user, self.transaction_type, self.currency_id, self.quantity)
+		return "<Transaction(id=%d, name=%s)>" % (self.id, self.name)
+
+class Transaction(Base):
+    __tablename__ = 'transactions'
+
+    id = Column(Integer, primary_key=True)
+    transaction_type_id = Column(Integer)
+    amount = Column(Float)	
+    user_id = Column(Integer, ForeignKey('users.id'))
+    currency_id = Column(Integer, ForeignKey('currencies.id'))
+    transaction_type_id = Column(Integer, ForeignKey('transaction_types.id'))
+    user = relationship("User")
+    transaction_type_name = relationship("TransactionType")
+    currency = relationship("Currency")
+
+    def __repr__(self):
+        return "<Transaction(id=%d, user=%s, transaction_type_name=%s, currency=%s, amount='%d')>" % (self.id, self.user, self.transaction_type_name, self.currency, self.amount)
 
 
 

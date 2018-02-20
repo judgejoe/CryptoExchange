@@ -7,30 +7,21 @@
 
 $( document ).ready(function() {
 
-var sum = 0;
 
-    $.ajax({
-        type: "GET",
-        dataType: "json",
-        url: "holdings/2", 
-        success: function(response) {
-	       $.each(response,function(i, holding) {
-                    $("#holdings_table").append('<tr><td class="code">' + holding.code + '</td><td class="quantity">' + holding.quantity + '</td><td class="value">' + holding.value + '</td></tr>');
-                })},	
-	complete: function(xhr, status) {
-$(".price").each(function() {
-
-    var value = $(this).text();
-    // add only if the value is number
-    if(!isNaN(value) && value.length != 0) {
-        sum += parseFloat(value);
-    }
+$.ajax({
+    type: "GET",
+    dataType: "json",
+    url: "holdings/2", 
+    success: function(response) {
+        var sum = 0;
+        $.each(response,function(i, holding) {
+            $("#holdings_table").append('<tr><td class="code">' + holding.currency + '</td><td class="amount">' + holding.amount + '</td><td class="value"> $' + holding.value.toFixed(2) + '</td></tr>');
+            sum += holding.value;
+        })
+        $("#holdings_table > tbody").after('<tr><td class="code">TOTAL</td><td class="amount">-</td><td class="value"> $' + sum.toFixed(2) + '</td></tr>');
+    }	
 });
-}
-        });
-        //set the value of currents rows sum to the total-combat element in the current row
-                    $("#holdings_table > tbody").after('<tr><td class="code">TOTAL</td><td class="quantity">-</td><td class="value">' + sum + '</td></tr>');
-    });
+});
   </script>
   </head>
  

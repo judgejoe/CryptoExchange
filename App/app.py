@@ -3,20 +3,14 @@ import sqlalchemy as sa
 from flask import json, request
 from sqlalchemy.orm import sessionmaker
 from objects import User, Transaction, Currency, Holding
+from currency import convert_currency
+from sqlalchemy.sql import functions as func
 import requests
 
 sqlite_file = '../db/cryptoexchange.db'
 engine = sa.create_engine('sqlite:///' + sqlite_file)
 Session = sessionmaker(bind=engine)
 session = Session()
-
-prices = {
-	"BTC"  : {"USD" : 10557.2},
-	"LTC"  : {"BTC":0.02056,"USD":217.29},
-	"DOGE" : {"BTC":6.1e-7,"USD":0.006542},
-	"XMR"  : {"BTC":0.02863,"USD":303.03},
-	"USD"  : {"BTC":0.0000947,"USD" : 1}
-	}
 
 app = Flask(__name__)
 
@@ -34,13 +28,25 @@ def currencies():
     rjson = []
 
     for row in session.query(Currency).all():
-	rjson.append({'currency_id': row.id, 'code' : row.code})	
+        rjson.append({'id': row.id, 'code' : row.code, 'value_usd' : convert_currency(row.code, 'USD', 1), 'value_btc': convert_currency(row.code, 'BTC', 1)})	
 
     js = json.dumps(rjson)
 
     resp = Response(js, status=200, mimetype='application/json')
 
     return resp
+
+def get_currency_balance(user_id, currency_code): 
+    transactions = session.query(Transaction, func.sum(Transaction.amount).label('balance')).filter_by(user_id = user_id).join(Currency).filter_by(code = currency_code).group_by(Transaction.currency_id).one()
+    if len(transactions) == 0:
+        return []
+    return transactions
+
+def get_balances(user_id): 
+    transactions = session.query(Transaction, func.sum(Transaction.amount).label('balance')).filter_by(user_id = user_id).join(Currency).group_by(Transaction.currency_id).all()
+    if len(transactions) == 0:
+        return []
+    return transactions
 
 @app.route('/holdings/<int:user_id>', methods=['GET'])
 def holdings(user_id):
@@ -51,32 +57,29 @@ def holdings(user_id):
         js = json.dumps(rjson)
         return Response(json.dumps({'error':'no user with id ' + str(user_id)}), status=400, mimetype='application/json')
     
-    holdings = user.holdings
-    if len(holdings) == 0:
-        js = json.dumps(rjson)
-        return Response('', status=204, mimetype='application/json')
-
-    for row in holdings:
-        value = prices[row.currency.code]["USD"] * row.quantity
-        rjson.append({'currency_id': row.currency.id, 'code' : row.currency.code, 'quantity' : row.quantity, 'value': value})	
-
+    balances = get_balances(user_id)
+    for row in balances:
+        print(row)
+        rjson.append({'currency_id' : row.Transaction.currency.id, 'currency_code' : row.Transaction.currency.code, 'amount' : row.balance, 'value': convert_currency(row.Transaction.currency.code, 'USD', row.balance)})	
+    
     resp = Response(json.dumps(rjson), status=200, mimetype='application/json')
 
     return resp
 
-@app.route('/trades', methods=['POST'])
+@app.route('/trades/', methods=['POST'])
 def trade():
 
     rjson = {'quantity' : 0, 'my_currency_id' : -1, 'trade_currency_id' : -1}
 
-    user_id = 2 #int(request.form['user_id'])
+    user_id = 2 #user_id, int(request.form['user_id'])
     my_currency_id = int(request.form['my_currency_id'])
     trade_currency_id = int(request.form['trade_currency_id'])
     quantity = float(request.form['quantity'])
     user = session.query(User).filter_by(id=user_id).first()
     my_currency_code = session.query(Currency).filter_by(id=my_currency_id).first().code
     trade_currency_code = session.query(Currency).filter_by(id=trade_currency_id).first().code 
-
+    
+    # TODO store valid currency trades in the DB instead of hardcoding them
     if trade_currency_code == 'BTC':
         if my_currency_code != 'USD':
             return Response(json.dumps({'error' : 'Cannot trade ' + str(my_currency_code) + ' for ' + str(trade_currency_code)}), status=403, mimetype='application/json')
@@ -84,24 +87,20 @@ def trade():
         if my_currency_code != 'BTC':
             return Response(json.dumps({'error' : 'Cannot trade ' + str(my_currency_code) + ' for ' + str(trade_currency_code)}), status=403, mimetype='application/json')
 
-    my_currency_holdings = session.query(Holding).filter_by(currency_id=my_currency_id,user_id=user_id).first().quantity
-    price = prices[trade_currency_code][my_currency_code] * quantity
-    if price <= my_currency_holdings:
-        rjson['my_currency_holdings'] = my_currency_holdings
+    trade_price = convert_currency(trade_currency_code,my_currency_code,quantity)
+    balance = get_currency_balance(user_id, my_currency_code)
+
+    if trade_price <= balance.balance:
         rjson['quantity'] = quantity
         rjson['trade_currency_id'] = trade_currency_id
         rjson['my_currency_id'] = my_currency_id
-        rjson['price'] = prices[trade_currency_code][my_currency_code] * quantity
+        rjson['price'] = trade_price
         my_currency_object = session.query(Holding).filter_by(currency_id=my_currency_id,user_id=user_id).first()
         trade_currency_object = session.query(Holding).filter_by(currency_id=trade_currency_id,user_id=user_id).first()
-        my_currency_object.quantity -= price
-        if trade_currency_object is None:
-            new_holding = Holding(currency_id = trade_currency_id, user_id = user_id, quantity = quantity)
-            session.add(new_holding)
-        else:
-            trade_currency_object.quantity += quantity
-        new_transaction = Transaction(transaction_type=0,user_id = user_id, currency_id = my_currency_id, exchange_rate = 1, quantity=quantity)
-        session.add(new_transaction)
+        new_debit = Transaction(transaction_type_id=3,user_id = user_id, currency_id = my_currency_id, amount=-1*trade_price)
+        new_credit = Transaction(transaction_type_id=3,user_id = user_id, currency_id = trade_currency_id, amount=quantity)
+        session.add(new_debit)
+        session.add(new_credit)
 
         session.commit()
         return Response(json.dumps(rjson), status=200 , mimetype='application/json')

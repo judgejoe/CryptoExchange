@@ -13,7 +13,7 @@ $( document ).ready(function() {
         url: "holdings/2", 
         success: function(response) {
 	       $.each(response,function(i, holding) {
-                    $("#my_currencies").append('<option value=' + holding.currency_id + '>' + holding.code + '</option>');
+                    $("#my_currencies").append('<option value=' + holding.currency_id + '>' + holding.currency_code + '</option>');
                 });	
 	}
     });
@@ -21,10 +21,9 @@ $( document ).ready(function() {
         type: "GET",
         dataType: "json",
         url: "currencies/", 
-//        data: {number: numberval},
         success: function(response) {
 	       $.each(response,function(i, currency) {
-                    $("#trade_currency").append('<option value=' + currency.currency_id + '>' + currency.code + '</option>');
+                    $("#trade_currency").append('<option value=' + currency.id + '>' + currency.code + '</option>');
                 });	
 	}
     });
@@ -32,7 +31,7 @@ $( document ).ready(function() {
 
 function submitTrade (){
     $.ajax({
-        url:'trades',
+        url:'trades/',
         type:'post',
         data:$('#trade').serialize(),
         success:function(){
