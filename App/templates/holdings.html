@@ -15,7 +15,7 @@ $.ajax({
     success: function(response) {
         var sum = 0;
         $.each(response,function(i, holding) {
-            $("#holdings_table").append('<tr><td class="code">' + holding.currency + '</td><td class="amount">' + holding.amount + '</td><td class="value"> $' + holding.value.toFixed(2) + '</td></tr>');
+            $("#holdings_table").append('<tr><td class="code">' + holding.currency_code + '</td><td class="amount">' + holding.amount + '</td><td class="value"> $' + holding.value.toFixed(2) + '</td></tr>');
             sum += holding.value;
         })
         $("#holdings_table > tbody").after('<tr><td class="code">TOTAL</td><td class="amount">-</td><td class="value"> $' + sum.toFixed(2) + '</td></tr>');

@@ -95,8 +95,6 @@ def trade():
         rjson['trade_currency_id'] = trade_currency_id
         rjson['my_currency_id'] = my_currency_id
         rjson['price'] = trade_price
-        my_currency_object = session.query(Holding).filter_by(currency_id=my_currency_id,user_id=user_id).first()
-        trade_currency_object = session.query(Holding).filter_by(currency_id=trade_currency_id,user_id=user_id).first()
         new_debit = Transaction(transaction_type_id=3,user_id = user_id, currency_id = my_currency_id, amount=-1*trade_price)
         new_credit = Transaction(transaction_type_id=3,user_id = user_id, currency_id = trade_currency_id, amount=quantity)
         session.add(new_debit)
