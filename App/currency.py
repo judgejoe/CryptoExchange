@@ -25,7 +25,10 @@ def convert_currency_code(from_code, to_code, quantity):
 
 def tradeable_currency_codes(from_code, to_code):
     if to_code == 'BTC':
-        if from_code != 'USD':
+        if from_code != 'USD' and \
+           from_code != 'LTC' and \
+           from_code != 'DOGE' and \
+           from_code != 'XMR':
             return False
     if to_code == 'USD'  or \
        to_code == 'LTC'  or \

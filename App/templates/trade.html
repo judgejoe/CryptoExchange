@@ -48,6 +48,10 @@ function submitTrade (){
         data:$('#trade').serialize(),
         success:function(){
             window.location="/myholdings"
+        },
+        error:function(jqXHR, status, thrownError) {
+            response=jQuery.parseJSON(jqXHR.responseText);
+            $('#error').text("ERROR : " + response.error)
         }
     });
 }
@@ -55,12 +59,13 @@ function submitTrade (){
   </head>
  
   <body>
-	<form id="trade" name="trade" action="javascript: submitTrade()" method="POST"> 
+      {% include 'nav.html' %}
+      <form id="trade" name="trade" action="javascript: submitTrade()" method="POST"> 
         I want to trade <input name="from_quantity" id="from_quantity"></input> <select name="from_currency_id" id="from_currency_id"> </select> for <input name="to_quantity" id="to_quantity" readonly></input><select name="to_currency_id" id="to_currency_id"></select>
 	</select> 
     <input type="hidden" name="success_url" value="/holdings">
 	<input type="submit">
 	</form> 
-    </div>
+    <div id="error"></div>
   </body>
 </html>

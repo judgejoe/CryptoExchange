@@ -3,6 +3,7 @@ PRAGMA foreign_keys = ON;
 CREATE TABLE users (
 	id INTEGER PRIMARY KEY,
 	name VARCHAR(255),
+	password VARCHAR(255),
 	pubkey BLOB
 );
 
@@ -12,23 +13,19 @@ CREATE TABLE currencies (
 	name VARCHAR(255)
 );
 
-CREATE TABLE transactions (
+CREATE TABLE transaction_types (
 	id INTEGER PRIMARY KEY,
-	type INTEGER,
-	user_id INTEGER,
-	currency_id INTEGER,
-	quantity FLOAT,
-	exchange_rate FLOAT,
-	FOREIGN KEY(user_id) REFERENCES users(id),
-	FOREIGN KEY(currency_id) REFERENCES currencies(id)
+	name VARCHAR(255) UNIQUE
 );
 
-CREATE TABLE holdings (
+CREATE TABLE transactions (
 	id INTEGER PRIMARY KEY,
-	currency_id INTEGER,
+	transaction_type_id INTEGER,
 	user_id INTEGER,
-	quantity FLOAT,
+	currency_id INTEGER,
+	amount FLOAT,
+	FOREIGN KEY(user_id) REFERENCES users(id),
 	FOREIGN KEY(currency_id) REFERENCES currencies(id),
-	FOREIGN KEY(user_id) REFERENCES users(id)
+	FOREIGN KEY(transaction_type_id) REFERENCES transaction_types(id)
 );
 

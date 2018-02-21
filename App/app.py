@@ -49,9 +49,7 @@ def currencies():
     for row in session.query(Currency).all():
         rjson.append({'id': row.id, 'code' : row.code, 'value_usd' : convert_currency_code(row.code, 'USD', 1), 'value_btc': convert_currency_code(row.code, 'BTC', 1)})	
 
-    js = json.dumps(rjson)
-
-    resp = Response(js, status=200, mimetype='application/json')
+    resp = Response(json.dumps(rjson), status=200, mimetype='application/json')
 
     return resp
 
