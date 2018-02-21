@@ -53,7 +53,7 @@ There are 3 sections of the app:
 Navigate to http://ec2-52-3-126-157.compute-1.amazonaws.com:8888/myholdings. You will be redirected to the login page.
 There are 4 users: Jim, Bob, Lucy and Sally. Password is the same as the user name
 
-![<photo of login here](https://raw.githubusercontent.com/judgejoe/CryptoExchange/tree/dev/imgs/login.png)
+![photo of login here](https://github.com/judgejoe/CryptoExchange/blob/dev/imgs/login.png)
 
 Once you are logged in you will be redirected to the holdings page. On this page you will see all of the user's holdings, and their value in USD.
 
