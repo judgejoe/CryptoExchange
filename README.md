@@ -25,13 +25,14 @@ Given the time constraints and limited speficifation I needed to aggressively mi
 
 ## Tech stack
 ## Server
-Python/Flask was used as the application server give it's simplicity, ease of use, templating, quick setup time, and interoperability with DBs. Flask is also the web server in this setup. This would not be ideal in a real, internet-scale web app. For that you would want a web server in front of flask such as nginx or Apache. SQLAlchemy was used to access the database from within Flask.
+Python/Flask was used as the application server give it's simplicity, ease of use, templating, quick setup time, and interoperability with DBs. Flask is also the web server in this setup. This would not be ideal in a real, internet-scale web app. For that you would want a web server in front of flask such as nginx or Apache. SQLAlchemy was used to access the database from within Flask. Several API endpoints were implement to implement retrieving balances, retrieving currency prices, converting between currencies, and making trades
 
 ## Database
 SQLite was used as the Database System due to it's simplicity, ease of use, and quick setup time. SQLite would not scale to thousands of users, but a low QPS is assumed. SQLite is used in single-thread mode, and a single connection from the application server to the database is used.
 
 ## Front End
 JQuery and Javacript approach used for client side scripting. There is no CSS. Functionality was prioritized over looks.
+
 
 ## Setup
 The github repo contains a `setup` directory. In that directory is a setup script which handles installation of debian packages, pip packages, and database setup.  The following was run on an AWS t2.micro instance running the Ubuntu AMI (ami-66506c1c).
@@ -99,3 +100,4 @@ My app very much focuses on delivering core functionality at the expense of ever
 - Styling.
 - Error handling. Error handling is good in some areas and not so good in others.  For example, if you try to trade with an invalid user id, you get an error message and a 4xx HTTP status.  If you omit a parameter from an api call to flask, you get a 405 Error with no indication of what went wrong.
 - Revisit the 'holdings' calculation. To keep things as simple as possible and prevent potential out-of-sync errors, I chose NOT to store balances in the database. Instead when balances are computed, the entire transaction history is summed. This is ok for this app since the number of transactions is quite small. However this approach would be slow if the number of transactions becomes very large.
+- Implement minimum currency unit & Floating point arithmetic. Bitcoin allows you to trade in units of .00000001 BTC. My app allows you to trade any fraction of a bitcoin that can be expressed as a floating point. I also used floats to keep things simple, but this introduces issues as many decimals cannot be represented as binary fractions and you end up with tiny amounts being added to your float values. A better approach would be to stay in the integer realm and trade in units of minimum currency units or to round floats. I just didn't get around to this.
