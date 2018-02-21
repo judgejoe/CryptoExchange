@@ -15,13 +15,13 @@ As a crypto currency trader, I want to see my current Bitcoin, Litecoin, Dogecoi
 
 ## Scope
 Given the time constraints and limited speficifation I needed to aggressively minimize scope. Whenever a tradeoff needed to be made, I almost always favored getting core functionality working over anything else. Here are some of the assumptions that were made:
-* There exists a market maker to facilitate trades. All trades will be made with the market maker at the current market price of the asset being traded. ONLY market orders are supported and the market maker will NEVER refuse a trade at market value. Traders will NOT trade directly with one another.
-* The authoritative source for market prices for all cryptocurrencies will be the cryptocompare.com API.
-* Currency prices are updated once an minute.
-* There is no mimimum unit of currency. If a trader wants to buy .00000000000000000001 bitcoins, they can. The only limits are those imposed by the types in Javascript and Python. This is not how real-life trading generally works. Shares or units of currency must be purchased.
-* Concurrency is not supported. Flask is run in single synchronous server on a single thread. Making the server thread safe would be a significant underatking
-* Very small request loads are assumed. a few requests per second max.
-* Security is not a requirement. PWs are stored in the clear. No SSL. No authentication. These would all be critically important requirements for a production, internet-scale web app but given time constraints it wasn't possible to implement proper security.
+- There exists a market maker to facilitate trades. All trades will be made with the market maker at the current market price of the asset being traded. ONLY market orders are supported and the market maker will NEVER refuse a trade at market value. Traders will NOT trade directly with one another.
+- The authoritative source for market prices for all cryptocurrencies will be the cryptocompare.com API.
+- Currency prices are updated once an minute.
+- There is no mimimum unit of currency. If a trader wants to buy .00000000000000000001 bitcoins, they can. The only limits are those imposed by the types in Javascript and Python. This is not how real-life trading generally works. Shares or units of currency must be purchased.
+- Concurrency is not supported. Flask is run in single synchronous server on a single thread. Making the server thread safe would be a significant underatking
+- Very small request loads are assumed. a few requests per second max.
+- Security is not a requirement. PWs are stored in the clear. No SSL. No authentication. These would all be critically important requirements for a production, internet-scale web app but given time constraints it wasn't possible to implement proper security.
 
 ## Tech stack
 ## Server
@@ -53,7 +53,7 @@ There are 3 sections of the app:
 Navigate to http://ec2-52-3-126-157.compute-1.amazonaws.com:8888/myholdings. You will be redirected to the login page.
 There are 4 users: Jim, Bob, Lucy and Sally. Password is the same as the user name
 
-<photo of login here>
+![<photo of login here](https://github.com/judgejoe/CryptoExchange/tree/dev/imgs/login.png)
 
 Once you are logged in you will be redirected to the holdings page. On this page you will see all of the user's holdings, and their value in USD.
 
