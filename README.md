@@ -43,12 +43,14 @@ Get:3 http://us-east-1.ec2.archive.ubuntu.com/ubuntu xenial-backports InRelease 
 Get:4 http://security.ubuntu.com/ubuntu xenial-security InRelease [102 kB] 
 .
 .
-.```
+.
+```
 
 ## Running the app
-cd ../App
-$ python app.py
-
+```ubuntu@ip-10-0-0-11:~/CryptoExchange/setup$ cd ../App/
+ubuntu@ip-10-0-0-11:~/CryptoExchange/App$ python app.py 
+ * Running on http://0.0.0.0:8888/ (Press CTRL+C to quit)
+```
 Note that the server runs on port 8888.
 
 ## Using the app
