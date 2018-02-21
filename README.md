@@ -35,15 +35,15 @@ JQuery and Javacript approach used for client side scripting. There is no CSS. F
 
 ## Setup
 The github repo contains a `setup` directory. In that directory is a setup script which handles installation of debian packages, pip packages, and database setup.  The following was run on an AWS t2.micro instance running the Ubuntu AMI (ami-66506c1c).
- `ubuntu@ip-10-0-0-11:~/CryptoExchange$ cd setup/
- ubuntu@ip-10-0-0-11:~/CryptoExchange/setup$ bash setup.sh 
- Hit:1 http://us-east-1.ec2.archive.ubuntu.com/ubuntu xenial InRelease
- Get:2 http://us-east-1.ec2.archive.ubuntu.com/ubuntu xenial-updates InRelease [102 kB]
- Get:3 http://us-east-1.ec2.archive.ubuntu.com/ubuntu xenial-backports InRelease [102 kB]
- Get:4 http://security.ubuntu.com/ubuntu xenial-security InRelease [102 kB] 
- .
- .
- .`
+```ubuntu@ip-10-0-0-11:~/CryptoExchange$ cd setup/
+ubuntu@ip-10-0-0-11:~/CryptoExchange/setup$ bash setup.sh 
+Hit:1 http://us-east-1.ec2.archive.ubuntu.com/ubuntu xenial InRelease
+Get:2 http://us-east-1.ec2.archive.ubuntu.com/ubuntu xenial-updates InRelease [102 kB]
+Get:3 http://us-east-1.ec2.archive.ubuntu.com/ubuntu xenial-backports InRelease [102 kB]
+Get:4 http://security.ubuntu.com/ubuntu xenial-security InRelease [102 kB] 
+.
+.
+.```
 
 ## Running the app
 cd ../App
