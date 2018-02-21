@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>CryptoExchange | Holdings</title>
+  <script src='js/jquery-3.3.1.js'></script>
+  <script>
+
+$( document ).ready(function() {
+
+
+$.ajax({
+    type: "GET",
+    dataType: "json",
+    url: "holdings", 
+    success: function(response) {
+        var sum_value = 0;
+        var sum_quantity = 0;
+        $.each(response,function(i, holding) {
+            $("#holdings_table").append('<tr><td class="code">' + holding.currency_code + '</td><td class="amount">' + holding.quantity + '</td><td class="value"> $' + holding.value.toFixed(2) + '</td></tr>');
+            sum_value    += holding.value;
+            sum_quantity += holding.quantity;
+        })
+        $("#holdings_table > tbody").after('<tr><td class="code">TOTAL</td><td class="amount">' + sum_quantity + '</td><td class="value"> $' + sum_value.toFixed(2) + '</td></tr>');
+    }	
+});
+});
+  </script>
+  </head>
+ 
+  <body>
+      {% include 'nav.html' %}
+	<table id="holdings_table">
+ 		<tr>
+  		 <th>Currency</th>
+   		 <th>Quantity</th>
+   		 <th>Value (USD)</th>
+ 		</tr>
+	<table>
+  </body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>CryptoExchange | Login</title>
+  <script src='js/jquery-3.3.1.js'></script>
+  <script>
+
+$( document ).ready(function() {
+
+    $.ajax({
+        type: "GET",
+        dataType: "json",
+        url: "holdings/2", 
+        success: function(response) {
+	       $.each(response,function(i, holding) {
+                    $("#my_currencies").append('<option value=' + holding.currency_id + '>' + holding.currency_code + '</option>');
+                });	
+	}
+    });
+    $.ajax({
+        type: "GET",
+        dataType: "json",
+        url: "currencies/", 
+        success: function(response) {
+	       $.each(response,function(i, currency) {
+                    $("#trade_currency").append('<option value=' + currency.id + '>' + currency.code + '</option>');
+                });	
+	}
+    });
+});
+
+function submitTrade (){
+    $.ajax({
+        url:'trades/',
+        type:'post',
+        data:$('#trade').serialize(),
+        success:function(){
+            alert("worked");
+        }
+    });
+}
+  </script>
+  </head>
+ 
+  <body>
+	<form id="trade" name="trade" action="login" method="POST"> 
+        Username <input name="username" id="username"></input><br/> 
+        Password <input name="password" id="password" type="password"></input>
+        <input type="submit">
+	</form> 
+    </div>
+  </body>
+</html>
+
