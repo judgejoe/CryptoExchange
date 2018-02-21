@@ -8,6 +8,14 @@ update_prices = True
 prices = { }
 
 def convert_currency_code(from_code, to_code, quantity):
+    """
+    convert a quantity of one crypto currency to another based on the current exchange rate
+
+    :param from_code: the cryptocurrency code you are converting from
+    :param to_code: the cryptocurrency code you are converting to
+    :param quantity: the amount of the "from" currency you wish to convery
+    :returns: the quantity of "to" currency that "from" currency is worth based on current exchange rates
+    """
     global last_update_time
     global prices
 
@@ -24,6 +32,13 @@ def convert_currency_code(from_code, to_code, quantity):
     return float(prices[from_code][to_code]) * float(quantity)
 
 def tradeable_currency_codes(from_code, to_code):
+    """
+    Helper function that returns whether two cryptocurrencies are allowed to be traded on the platform
+
+    :param from_code: the cryptocurrency code you are converting from
+    :param to_code: the cryptocurrency code you are converting to
+    :returns: True if the currencies are allowed to be traded, false otherwise.
+    """
     if to_code == 'BTC':
         if from_code != 'USD' and \
            from_code != 'LTC' and \
