@@ -34,6 +34,14 @@ def before_request():
     if 'login_user_id' not in request.cookies.keys() and request.endpoint != 'login':
         return redirect(url_for('login'))
 
+@app.route('/', methods=['GET'])
+def home():
+    """
+    Handler for the / request
+    :returns: a redirct to the holdings page
+    """
+    return make_response(redirect(url_for('showHoldings')))
+
 @app.route('/js/<path:path>')
 def send_js(path):
     """
