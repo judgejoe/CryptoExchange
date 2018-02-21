@@ -59,7 +59,7 @@ def login():
         user = session.query(User).filter_by(name=username).filter_by(password=password).scalar()
         if user is None:
             response = make_response(json.dumps({error:'Invalid username or password'}))
-            response.status_code=403
+            response.status_code=401
             response.mime_type='application/json'
             return response
         else:
@@ -126,7 +126,7 @@ def holdings():
     user = session.query(User).filter_by(id=user_id).scalar()
     if user == None:
         js = json.dumps(rjson)
-        return Response(json.dumps({'error':'no user with id ' + str(user_id)}), status=400, mimetype='application/json')
+        return Response(json.dumps({'error':'no user with id ' + str(user_id)}), status=401, mimetype='application/json')
     
     balances = get_balances(user_id)
     for row in balances:
@@ -165,7 +165,7 @@ def trade():
     # Check that these currencies are tradeable. Users are allowed to trade USD <-> BTC and BTC <-> (LTC|DOGE|XMR)
     if not tradeable_currency_codes(from_currency_code,to_currency_code):
         return Response(json.dumps({'error' : 'Cannot trade ' + str(from_currency_code) + ' for ' + str(to_currency_code)}), 
-                        status=403, 
+                        status=409, 
                         mimetype='application/json')
 
 
@@ -192,7 +192,7 @@ def trade():
         session.commit()
         return Response(json.dumps(rjson), status=200 , mimetype='application/json')
     else:
-        return Response(json.dumps({'error' : 'Insufficient funds'}), status=403, mimetype='application/json')
+        return Response(json.dumps({'error' : 'Insufficient funds'}), status=402, mimetype='application/json')
 
 
 @app.route('/prices')
@@ -238,12 +238,12 @@ def convertCurrency():
 
     from_currency = session.query(Currency).filter_by(id=from_currency_id).one()
     if from_currency == None:
-        return Response(json.dumps({'error' : 'Invalid currency_id: ' + str(from_currency_id)} ), status=403 , mimetype='application/json')
+        return Response(json.dumps({'error' : 'Invalid currency_id: ' + str(from_currency_id)} ), status=415 , mimetype='application/json')
 
     from_currency_code = str(from_currency.code)
     to_currency = session.query(Currency).filter_by(id=to_currency_id).one()
     if to_currency == None:
-        return Response(json.dumps({'error' : 'Invalid currency_id: ' + str(to_currency_id)} ), status=403 , mimetype='application/json')
+        return Response(json.dumps({'error' : 'Invalid currency_id: ' + str(to_currency_id)} ), status=415 , mimetype='application/json')
 
     to_currency_code = str(to_currency.code)
     conversion = convert_currency_code(from_currency_code, to_currency_code, quantity)
