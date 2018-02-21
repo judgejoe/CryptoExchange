@@ -97,5 +97,5 @@ My app very much focuses on delivering core functionality at the expense of ever
 - Security. There is no security in his app. With more time I would use SSL, implement better password management, authenticate users making trades.
 - Testing. Unit test coverage is pretty low as is. More unit tests would be needed to make this a reliable app
 - Styling.
-- Error handling. Error handling is good in some areas and not so good in others.  For example, if you try to trade with an invalid user id, you get an error message and a 4xx HTTP status.  If you.
+- Error handling. Error handling is good in some areas and not so good in others.  For example, if you try to trade with an invalid user id, you get an error message and a 4xx HTTP status.  If you omit a parameter from an api call to flask, you get a 405 Error with no indication of what went wrong.
 - Revisit the 'holdings' calculation. To keep things as simple as possible and prevent potential out-of-sync errors, I chose NOT to store balances in the database. Instead when balances are computed, the entire transaction history is summed. This is ok for this app since the number of transactions is quite small. However this approach would be slow if the number of transactions becomes very large.
