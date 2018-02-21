@@ -53,33 +53,29 @@ There are 3 sections of the app:
 Navigate to http://ec2-52-3-126-157.compute-1.amazonaws.com:8888/myholdings. You will be redirected to the login page.
 There are 4 users: Jim, Bob, Lucy and Sally. Password is the same as the user name
 
-![photo of login here](https://github.com/judgejoe/CryptoExchange/blob/dev/imgs/login.png)
+![login](https://github.com/judgejoe/CryptoExchange/blob/dev/imgs/login.png)
 
 Once you are logged in you will be redirected to the holdings page. On this page you will see all of the user's holdings, and their value in USD.
 
-<photo of holdings here>
+![holdings](https://github.com/judgejoe/CryptoExchange/blob/dev/imgs/holdings.png)
 
 Say you want to check the prices of Bitcoin, or any other cryptocurrency.  Click on the "Currency Prices" link. That will bring you to a page which shows you all crypto curenncies supported in the platform and their price in USD and BTC.
 
-<photo of currency prices here>
+![prices](https://github.com/judgejoe/CryptoExchange/blob/dev/imgs/currency_prices.png)
 
-Now you decide you want to but some bitcoins. Go to Trade
+Now you decide you want to but some bitcoins. Go to Trade. Enter the amount you want to pay, select 'USD' from the drop down, then select the currency you want to receive. The amount you can buy of that currency will be auto populated based on the amount you entered.
 
-<photo of trading screen here>
-
-Enter the amount you want to pay, select 'USD' from the drop down, then select the currency you want to receive. The amount you can buy of that currency will be auto populated based on the amount you entered.
-
-<photo of autopopulation>
+![trade](https://github.com/judgejoe/CryptoExchange/blob/dev/imgs/TradeUSD_for_BTC.png)
 
 Click Submit. You will be brought back to the holdings screen and your holdings will reflect your trade.
 
-<photo of holdings>
+![Holdings_w_BTC](https://github.com/judgejoe/CryptoExchange/blob/dev/imgs/Holdings_w_BTC.png)
 
 Go back to the Trades screen and attempt to trade $1000000 for bitcoin. You will get an error message.
 
-<photo of insufficient funds error>
+![Insufficient Fund](https://github.com/judgejoe/CryptoExchange/blob/dev/imgs/insufficient_funds.png)
 
 Now try and trade 1$ USD for Litecoins. You will receive an error again:
 
-<photo Invalid trade error>
+![Invalid Trade](https://github.com/judgejoe/CryptoExchange/blob/dev/imgs/invalid_trade.png)
 
