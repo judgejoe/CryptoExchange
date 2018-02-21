@@ -35,8 +35,15 @@ JQuery and Javacript approach used for client side scripting. There is no CSS. F
 
 ## Setup
 The github repo contains a `setup` directory. In that directory is a setup script which handles installation of debian packages, pip packages, and database setup.  The following was run on an AWS t2.micro instance running the Ubuntu AMI (ami-66506c1c).
-`$ cd setup
-$ bash setup
+`ubuntu@ip-10-0-0-11:~/CryptoExchange$ cd setup/
+ubuntu@ip-10-0-0-11:~/CryptoExchange/setup$ bash setup.sh 
+Hit:1 http://us-east-1.ec2.archive.ubuntu.com/ubuntu xenial InRelease
+Get:2 http://us-east-1.ec2.archive.ubuntu.com/ubuntu xenial-updates InRelease [102 kB]
+Get:3 http://us-east-1.ec2.archive.ubuntu.com/ubuntu xenial-backports InRelease [102 kB]
+Get:4 http://security.ubuntu.com/ubuntu xenial-security InRelease [102 kB] 
+.
+.
+.``
 
 ## Running the app
 cd ../App
@@ -79,3 +86,13 @@ Now try and trade 1$ USD for Litecoins. You will receive an error again:
 
 ![Invalid Trade](https://github.com/judgejoe/CryptoExchange/blob/dev/imgs/invalid_trade.png)
 
+##Testing
+Testing coverage is limited to a few unit tests (`tests/`) using Python's unittest module and several end-to-end tests exercising core functionality. With more time, unit testing coverage would be extended to cover all functions
+
+## Future Enhancements
+My app very much focuses on delivering core functionality at the expense of everything else. With more time, the following enhancements would be made:
+- Scalabilty. Multithreading to support simultaneous user requests, making the code thread safe, putting nginx in front of the application server (i.e. to handle static file serving and other web server functions), using a more scalable database system
+- Security. There is no security in his app. With more time I would use SSL, implement better password management, authenticate users making trades.
+- Testing. Unit test coverage is pretty low as is. More unit tests would be needed to make this a reliable app
+- Styling.
+- Error handling. Error handling is good in some areas and not so good in others.  For example, if you try to trade with an invalid user id, you get an error message and a 4xx HTTP status.  If you.
